@@ -53,31 +53,53 @@ ISR(USI_START_vect){
 }
 
 ISR(USI_OVF_vect){
+    
     if(ack){
-
-        if ( status == 4) {                 /*Modo envío de datos (PRE)*/
+	
+	if(status == 5){		    /*¿NACK o ACK? (por parte del*/
+	    if ( bit_is_clear(PINB,SDAP)) { /*maestro)*/
+		status = 4;		    /*En caso de ACK, prepare el*/
+		I2CD |=  ( 1<<SDAP );	    /*siguiente envío del registro*/
+	    }
+	    else {			    /*En caso de NACK, termine la */
+		status = 0;		    /*trasmisión*/
+		I2CP &= ~(( 1<<SDAP ));
+		I2CD &= ~(( 1<<SDAP ));
+		USICR &= ~(1<<USIOIE);
+	    }
+	}
+	if ( status == 4) {                 /*Modo envío de datos (PRE)*/
+	    I2CD |=  ( 1<<SCLP );           /*Mantener SCL en bajo*/
             USIDR = i2c_slave.registers[rdir];
             I2CP |=  ( 1<<SDAP );           /*SDA como salida, para envío*/
         }
         else {
+	    I2CD |=  ( 1<<SCLP );           /*Mantener SCL en bajo*/
             I2CD &= ~(( 1<<SDAP ));         /*Liberar SDA, para el resto de */
         }                                   /*modos*/
 
-        if(status == 3) {
+        if(status == 3) {		    /*Escritura por parte del maestro*/
             i2c_slave.registers[rdir] = data;
             USICR &= ~(1<<USIOIE);
             status = 0;
-            USISR |= (1<<USIPF);
         }
-        ack = 0;
+	
+	ack = 0;
         USISR &= ~((1<<USICNT3) |           /*Reinicio de banderas*/
                    (1<<USICNT2) |           /*y el contador*/
                    (1<<USICNT1) |
                    (1<<USICNT0));
+	
+        
     }
     else {
-        I2CD |=  ( 1<<SCLP );               /*Mantener SCL en bajo*/
-
+	I2CD |=  ( 1<<SCLP );               /*Mantener SCL en bajo*/
+	USISR = ~USISR &                    /*Reinicio contador*/
+                ~(( 1<<USICNT3 )|
+                  ( 1<<USICNT2 )|
+                  ( 1<<USICNT1 )|
+                  ( 1<<USICNT0 ));
+	
         if(status == 0){                    /*Lectura de direccion (e) y modo*/
             uint8_t wrrd = USIDR&0x1;       /*Write / Read*/
             uint8_t tdir = USIDR>>1;        /*Temporal direction (readed)*/
@@ -96,7 +118,7 @@ ISR(USI_OVF_vect){
         }
         else if(status == 1){               /*Lectura de dirección de registro*/
             rdir = USIDR;                   /*register direction*/
-            I2CD	|=  ( 1<<SDAP );    /*ACK*/
+            I2CD |=  ( 1<<SDAP );	    /*ACK*/
             ack = 1;
             status++;
         }
@@ -107,16 +129,11 @@ ISR(USI_OVF_vect){
             status++;
         }
         else if(status == 4){               /*Modo de envió de datos (POST)*/
-            I2CP &= ~( 1<<SDAP );           /*Apague la salida*/
-            I2CD &= ~( 1<<SDAP );			
-            while(!(PINB&(1<<SDAP)));       /*Espere NACK*/
-            status = 0;                     /*Reincie el sistema*/
+            status++;			    /*Prepare lectura de ACK o NACK*/
+	    USISR |= ( 1<<USICNT0 );	    /*para siguiente flanco*/
+	    I2CD  &= ~( 1<<SDAP);	    /*SDA como entrada*/
+	    ack = 1;
         }
-        USISR = ~USISR &                    /*Reinicio contador*/
-                ~(( 1<<USICNT3 )|
-                  ( 1<<USICNT2 )|
-                  ( 1<<USICNT1 )|
-                  ( 1<<USICNT0 ));
         if(ack) {
             USISR |= ( 1<<USICNT3 )|        /*Inicializacion contador en 14*/
                      ( 1<<USICNT2 )|
@@ -126,9 +143,8 @@ ISR(USI_OVF_vect){
         USISR	|= ( 1<<USIOIF ) |          /*Limpieza banderas*/
                    ( 1<<USISIF ) ;
 
-        I2CD &= ~( 1<<SCLP );               /*Liberar SCL*/
     }
-
+    I2CD &= ~( 1<<SCLP );		    /*Liberar SCL*/
 }
 
 void usi_i2c_slave(uint8_t dir){
