@@ -1,3 +1,5 @@
 build/*
 disassembly/*
 dist/*
+nbproject/*
+Makefile
