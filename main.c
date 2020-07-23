@@ -7,8 +7,8 @@
  *                      documentación
  * 
  * Objetivo:
- * PRUEBAS de implementación del protocolo I²C en modo esclavo para comunicarlo 
- * con otros MCU's
+ *  PRUEBAS de implementación del protocolo I²C en modo esclavo para comunicarlo 
+ *  con otros MCU's
  * 
  * ESTADO:
  *  SOLO LEE O ESCRIBE UN REGISTRO A LA VEZ (IMPORTANTE)
@@ -48,6 +48,7 @@ int main(void) {
     
     usi_i2c_slave( 0x1F );                      /*1*/
     i2c_slave.registers[3] = 0xCA;              /*2*/
+    i2c_slave.registers[4] = 0xB3;
     
     DDRB |= ( 1<<PINB3 );                       /*Pin 3 como salida*/
         
