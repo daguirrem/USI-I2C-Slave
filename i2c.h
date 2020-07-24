@@ -3,8 +3,8 @@
  * Autor:  David A. Aguirre Morales david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:35 PM
- * Última modificación: 22 de julio de 2020
- *						documentación
+ * Última modificación: 24 de julio de 2020
+ *						Eliminación CMODE de la estructura "i2c_slave"
  * 
  * Descripción:
  *  Libreria para la implementación del periferico USI en modo I²C.
@@ -30,13 +30,11 @@
 #include <stdint.h>
 
 /* i2c_slave ESTRUCTURA
- *  cmode: current mode: Modo actual del maestro (0) Escritura (1) Lectura.
  *  direction: Dirección del esclavo.
  *  registers: Registros del periferico para ser leídos o escritos, hasta 128.
  */
 struct i2c_slave{
-	uint8_t cmode		:1;
-	uint8_t direction	:7;
+	uint8_t direction	  ;
 	uint8_t registers[128];
 } i2c_slave;
 
