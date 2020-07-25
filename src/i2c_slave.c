@@ -4,8 +4,8 @@
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
  * Última modificación: 24 de julio de 2020
- *                      nuevo formato,
- *			implementación de lectura y escritura consecutivos registros.
+ *			implementación de funciones para guardar distintos tipos de datos
+ *			en los registros.
  *
  * Descripción :
  *  Libreria para la implementación del periferico USI en modo I²C.
@@ -15,7 +15,7 @@
  *  Funcionalidad probada.
  *
  * Futuras actualizaciones:
- *  Implementación de funciones guardar distintos tipos de datos en los registros.
+ *  Ninguna
  */
 
 /* REFERENCIAS:
@@ -23,7 +23,7 @@
  *  ATtiny45 DATASHEET, Atmel (https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
  */
 
-#include "i2c.h"
+#include "i2c_slave.h"
 #include <avr/interrupt.h>
 
 #define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/

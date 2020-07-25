@@ -4,29 +4,28 @@
  *
  * Fecha de creación:   23 de junio de 2020, 08:35 PM
  * Última modificación: 24 de julio de 2020
- *						Eliminación CMODE de la estructura "i2c_slave"
+ *						Nuevos prototipos de funciones
  * 
  * Descripción:
  *  Libreria para la implementación del periferico USI en modo I²C.
  *  Descripción de funciones.
  * 
  * ESTADO:
- *  SOLO LEE O ESCRIBE UN REGISTRO A LA VEZ (IMPORTANTE)
+ *  Funcional.
  * 
  * FUTURAS ACTUALIZACIONES:
- *  IMPLEMENTACIÓN ESCRITURA Y LECTURA DE VARIOS REGISTROS CONSECUTIVOS SEGÚN EL 
- *  ESTANDAR.
+ *  Ninguna
  */
 
 /* ESTADO HEADER
- *  DESCRIPCIÓN BÁSICA DE LA FUNCIÓN
+ *  Completo.
  * 
  * FUTURAS ACTUALIZACIONES:
  *  DOCUMENTACIÓN
  */
 
-#ifndef _I2C_H_
-#define	_I2C_H_
+#ifndef _I2C_SLAVE_H_
+#define	_I2C_SLAVE_H_
 #include <stdint.h>
 
 /* i2c_slave ESTRUCTURA
@@ -45,7 +44,7 @@ struct i2c_slave{
  *  Inicialización del periferico USI para trabajar el protocolo I²C en modo
  *  esclavo.		
  * Argumentos:
- *  -> dir:	Direccion deseada del modo esclavo
+ *  -> dir: Direccion deseada del modo esclavo
  * Retorno:
  *  <- ninguno */
 void usi_i2c_slave(uint8_t dir);
@@ -53,12 +52,12 @@ void usi_i2c_slave(uint8_t dir);
 /* usi_i2c_save_registers_xy()
  * Descripción:
  *  Guarda un byte (data) en registros del I²C, dependiendo del tipo de dato (xy) dode:
- *		x: - u, unsigned (Números naturales y cero)
- *		   - s, signed   (Números enteros)
+ *	    x: - u, unsigned (Números naturales y cero)
+ *         - s, signed   (Números enteros)
  * 
- *		y: - 8,  1 byte	 (char)
- *		   - 16, 2 bytes (half-word)
- *		   - 32, 4 bytes (word)
+ *	    y: - 8,  1 byte	 (char)
+ *         - 16, 2 bytes (half-word)
+ *         - 32, 4 bytes (word)
  * Argumentos:
  *  -> data:	 Datos que se desean almacentar
  *  -> dir:  Dirección de los registros I²C donde se desea almacenar.
@@ -71,4 +70,4 @@ void usi_i2c_save_registers_s8 (int8_t   data, uint8_t dir);
 void usi_i2c_save_registers_s16(int16_t  data, uint8_t dir);
 void usi_i2c_save_registers_s32(int32_t  data, uint8_t dir);
 
-#endif	/* _I2C_H */
+#endif	/* _I2C_SLAVE_H */
