@@ -42,75 +42,35 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#include "i2c.h"
+#include "i2c_slave.h"
 
 uint8_t x = 0;
 
-void usi_i2c_save_registers_u8 (uint8_t data, uint8_t dir);
-void usi_i2c_save_registers_u16(uint16_t data, uint8_t dir);
-void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir);
-void usi_i2c_save_registers_s8 (int8_t data, uint8_t dir);
-void usi_i2c_save_registers_s16(int16_t data, uint8_t dir);
-void usi_i2c_save_registers_s32(int32_t data, uint8_t dir);
-
-
 int main(void) {
+    
+    /*1*/
+    usi_i2c_slave( 0x1F );
 
-    usi_i2c_slave( 0x1F );                      /*1*/
+    /*2*/
+    /*Usa un byte de los registros disponibles*/
+    usi_i2c_save_registers_s8(-12,0x1);
+    /*Usa dos bytes de los registros disponibles (0x2-0x3)*/
+    usi_i2c_save_registers_u16(0xCAB3,0x2);
+    /*Usa cuatro bytes de los registros disponibles (0x4-0x7)*/
+    usi_i2c_save_registers_u32(0xFFC90132,0x4);
 
-    usi_i2c_save_registers_u16(0xCAB3,0x3);
-    usi_i2c_save_registers_u32(0xFFC90132,0x5);
-
-//    i2c_slave.registers[3] = 0xCA;            /*2*/
-//    i2c_slave.registers[4] = 0xB3;
-
-    DDRB |= ( 1<<PINB3 );                       /*Pin 3 como salida*/
+    /*Pin 3 como salida*/
+    DDRB |= ( 1<<PINB3 );
     uint16_t *i2c_16_in;
-    i2c_16_in = (uint16_t*) (i2c_slave.registers+1);
     while (1) {
-        if(*i2c_16_in == 0x81F9){		/*3*/
-            PORTB ^= (1<<PINB3);                /*Conmutación pin 3*/
+	/*3*/
+	i2c_16_in = (uint16_t*) (i2c_slave.registers+1);
+        if(*i2c_16_in == 0x81F9) {
+	    /*Conmutación pin 3*/
+            PORTB ^= (1<<PINB3);
         }
+	#ifndef DEBUG
 	_delay_ms(500);
+	#endif
     }
 }
-
-void usi_i2c_save_registers_u8(uint8_t data, uint8_t dir){
-    uint8_t * registers;
-    registers = (uint8_t*) (i2c_slave.registers + dir);
-    *registers = data;
-}
-void usi_i2c_save_registers_u16(uint16_t data, uint8_t dir){
-    uint16_t * registers;
-    registers = (uint16_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
-}
-void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir){
-    uint32_t * registers;
-    registers = (uint32_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
-}
-
-void usi_i2c_save_registers_s8(int8_t data, uint8_t dir){
-    int8_t * registers;
-    registers = (int8_t*) (i2c_slave.registers + dir);
-    *registers = data;
-}
-void usi_i2c_save_registers_s16(int16_t data, uint8_t dir){
-    int16_t * registers;
-    registers = (int16_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
-}
-void usi_i2c_save_registers_s32(int32_t data, uint8_t dir){
-    int32_t * registers;
-    registers = (int32_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
-}
-
-
