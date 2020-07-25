@@ -59,6 +59,7 @@ ISR(USI_START_vect){
     I2CD &= ~(( 1<<SCLP ));
 }
 
+/*Interrupción por desborde de contador*/
 ISR(USI_OVF_vect){
 
     /*¿Modo ACK? (¿Estoy en el bit correspondiente al ACK?)*/
@@ -125,7 +126,7 @@ ISR(USI_OVF_vect){
 	/*Mantener SCL en bajo*/
 	I2CD |=  ( 1<<SCLP );
 	/*Reiniciar únicamente el contador*/
-	USISR = ~USISR & ~(( 1<<USICNT3 )|( 1<<USICNT2 )|( 1<<USICNT1 )|( 1<<USICNT0 ));
+	USISR = ~USISR & ~( ( 1<<USICNT3 )|( 1<<USICNT2 )|( 1<<USICNT1 )|( 1<<USICNT0 ) );
 
 	/*Lectura de direccion (Esclavo) y modo (Escribir o Leer)*/
 	if(status == 0){
@@ -209,4 +210,42 @@ void usi_i2c_slave(uint8_t dir){
 
     i2c_slave.direction = dir;              /*Asignación de dirección*/
     sei();                                  /*Interrupciones globales*/
+}
+
+void usi_i2c_save_registers_u8(uint8_t data, uint8_t dir) {
+    uint8_t * registers;
+    registers = (uint8_t*) (i2c_slave.registers + dir);
+    *registers = data;
+}
+void usi_i2c_save_registers_u16(uint16_t data, uint8_t dir) {
+    uint16_t * registers;
+    registers = (uint16_t*) (i2c_slave.registers + dir);
+    //Intercambiar posición de bytes
+    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
+}
+void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir) {
+    uint32_t * registers;
+    registers = (uint32_t*) (i2c_slave.registers + dir);
+    //Intercambiar posición de bytes
+    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
+		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
+}
+
+void usi_i2c_save_registers_s8(int8_t data, uint8_t dir) {
+    int8_t * registers;
+    registers = (int8_t*) (i2c_slave.registers + dir);
+    *registers = data;
+}
+void usi_i2c_save_registers_s16(int16_t data, uint8_t dir) {
+    int16_t * registers;
+    registers = (int16_t*) (i2c_slave.registers + dir);
+    //Intercambiar posición de bytes
+    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
+}
+void usi_i2c_save_registers_s32(int32_t data, uint8_t dir) {
+    int32_t * registers;
+    registers = (int32_t*) (i2c_slave.registers + dir);
+    //Intercambiar posición de bytes
+    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
+		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
 }

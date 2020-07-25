@@ -50,4 +50,25 @@ struct i2c_slave{
  *  <- ninguno */
 void usi_i2c_slave(uint8_t dir);
 
+/* usi_i2c_save_registers_xy()
+ * Descripción:
+ *  Guarda un byte (data) en registros del I²C, dependiendo del tipo de dato (xy) dode:
+ *		x: - u, unsigned (Números naturales y cero)
+ *		   - s, signed   (Números enteros)
+ * 
+ *		y: - 8,  1 byte	 (char)
+ *		   - 16, 2 bytes (half-word)
+ *		   - 32, 4 bytes (word)
+ * Argumentos:
+ *  -> data:	 Datos que se desean almacentar
+ *  -> dir:  Dirección de los registros I²C donde se desea almacenar.
+ * Retorno:
+ *  <- ninguno */
+void usi_i2c_save_registers_u8 (uint8_t  data, uint8_t dir);
+void usi_i2c_save_registers_u16(uint16_t data, uint8_t dir);
+void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir);
+void usi_i2c_save_registers_s8 (int8_t   data, uint8_t dir);
+void usi_i2c_save_registers_s16(int16_t  data, uint8_t dir);
+void usi_i2c_save_registers_s32(int32_t  data, uint8_t dir);
+
 #endif	/* _I2C_H */
