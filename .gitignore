@@ -3,3 +3,4 @@ disassembly/*
 dist/*
 nbproject/*
 Makefile
+*.7z
