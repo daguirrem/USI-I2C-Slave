@@ -3,9 +3,12 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:24 PM
- * Última modificación: 22 de julio de 2020
+ * Última modificación: 25 de julio de 2020
  *                      Modificación para pruebas de lectura o escritura de varios
- *			registros
+ *			registros con nuevas funciones, documentación, arreglo pequeños
+ *			errores.
+ *			Fuses de prueba incluidos.
+ *			Actualización a completo.
  *
  * Objetivo:
  *  PRUEBAS de implementación del protocolo I²C en modo esclavo para comunicarlo
@@ -15,7 +18,7 @@
  *  Funcionalidad probada.
  *
  * FUTURAS ACTUALIZACIONES:
- *  Elaboración de ejemplos de implementación
+ *  Ninguna.
  *
  * MCU:
  *  ATtiny 45.
@@ -25,29 +28,49 @@
 
 /* DESCRIPCIÓN DE PRUEBAS:
  *  1.Inicialización del periferico I²C con una direcicción específicada por el
- *  usuario.
+ *  usuario. (0x1F en este ejemplo)
  *
  *  2.Inicialización del un registro cualquiera con un dato cualquiera para
- *  comprobar la lectura por parte de un maestro, (2 para comprobar varios reg)
+ *  comprobar la lectura por parte de un maestr. (Varios registros inicializados,
+ *  para que el maestro pueda comprobar sus valores)
  *
  *  3.Comprobación de un registro específico con un valor dado para comprobar
- *  la escritura por parte del esclavo, en caso de que el registro correspinda
+ *  la escritura por parte del esclavo, en caso de que el registro corresponda
  *  a el valor, el PIN3 del puerto B conmuntará cada medio segundo (500ms).
+ *  (El maestro debe escribir en el registro 0x8, el valor de -27128 (word) para que el
+ *  led parpadee)
  *
- *  ATtiny45 a 8MHz con una comunicación estable a 125KHz
+ *  ATtiny45 a 8MHz con una comunicación estable a 100KHz
+ *             16Mhz - 200KHz
  */
 
 #define F_CPU 8000000UL
 
+#include <stdint.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
 #include "i2c_slave.h"
 
+FUSES = {
+    /* LOW {SUT_CKSEL=INTRCOSC_8MHZ_6CK_14CK_64MS, CKOUT=CLEAR, CKDIV8=CLEAR}*/
+    .low = 0xE2,
+    /* HIGH {BODLEVEL=2V7, EESAVE=CLEAR, WDTON=CLEAR, SPIEN=SET, DWEN=CLEAR,
+     * RSTDISBL=CLEAR} */
+    .high = 0xDD,
+    /*EXTENDED {SELFPRGEN=CLEAR}*/
+    .extended = 0xFF,
+};
+
+LOCKBITS = {
+    /* LOCKBIT {LB=NO_LOCK}*/
+    0xFF,
+};
+
 uint8_t x = 0;
 
 int main(void) {
-    
+
     /*1*/
     usi_i2c_slave( 0x1F );
 
@@ -61,16 +84,15 @@ int main(void) {
 
     /*Pin 3 como salida*/
     DDRB |= ( 1<<PINB3 );
-    uint16_t *i2c_16_in;
+
+    int16_t test = 0;
     while (1) {
 	/*3*/
-	i2c_16_in = (uint16_t*) (i2c_slave.registers+1);
-        if(*i2c_16_in == 0x81F9) {
+	test = usi_i2c_read_registers_s16(0x8);
+        if(test == -27128) {
 	    /*Conmutación pin 3*/
             PORTB ^= (1<<PINB3);
         }
-	#ifndef DEBUG
 	_delay_ms(500);
-	#endif
     }
 }
