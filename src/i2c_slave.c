@@ -3,16 +3,17 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
- * Última modificación: 24 de julio de 2020
- *			implementación de funciones para guardar distintos tipos de datos
+ * Última modificación: 25 de julio de 2020
+ *			implementación de funciones para leer distintos tipos de datos
  *			en los registros.
+ *			Actualización a completo
  *
  * Descripción :
  *  Libreria para la implementación del periferico USI en modo I²C.
  *  Declaración de funciones e interrupciones.
  *
  * Estado:
- *  Funcionalidad probada.
+ *  Funcionalidad aprobada.
  *
  * Futuras actualizaciones:
  *  Ninguna
@@ -23,6 +24,7 @@
  *  ATtiny45 DATASHEET, Atmel (https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
  */
 
+#include <stdint.h>
 #include "i2c_slave.h"
 #include <avr/interrupt.h>
 
@@ -88,13 +90,13 @@ ISR(USI_OVF_vect){
             I2CD |=  ( 1<<SCLP );
 	    /*¿Stop?*/
 	    if(bit_is_set(USISR,USIPF)){
-	    /*Si, Detenga la trasmición*/
+		/*Si, Detenga la trasmisión*/
 		rdir = 0;
 		status = 0;
 		USICR &= ~(1<<USIOIE);
 	    }
 	    else {
-	    /*No, Prepare el siguiente registro*/
+		/*No, Prepare el siguiente registro*/
 		status=2;
 		rdir++;
 	    }
@@ -228,7 +230,7 @@ void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir) {
     registers = (uint32_t*) (i2c_slave.registers + dir);
     //Intercambiar posición de bytes
     *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
+		 ((data&0x0000FF00)<< 8)|((data&0x00FF0000)>> 8);
 }
 
 void usi_i2c_save_registers_s8(int8_t data, uint8_t dir) {
@@ -247,5 +249,36 @@ void usi_i2c_save_registers_s32(int32_t data, uint8_t dir) {
     registers = (int32_t*) (i2c_slave.registers + dir);
     //Intercambiar posición de bytes
     *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<<8)|((data&0x00FF0000) >>8);
+		 ((data&0x0000FF00)<< 8)|((data&0x00FF0000)>> 8);
+}
+
+uint8_t usi_i2c_read_registers_u8 (uint8_t dir) {
+    uint8_t * registers;
+    registers = (uint8_t*) (i2c_slave.registers + dir);
+    return *registers ;
+}
+uint16_t usi_i2c_read_registers_u16(uint8_t dir) {
+    uint16_t * registers;
+    registers = (uint16_t*) (i2c_slave.registers + dir);
+    return *registers;
+}
+uint32_t usi_i2c_read_registers_u32(uint8_t dir) {
+    uint32_t * registers;
+    registers = (uint32_t*) (i2c_slave.registers + dir);
+    return *registers;
+}
+int8_t usi_i2c_read_registers_s8 (uint8_t dir) {
+    int8_t * registers;
+    registers = (int8_t*) (i2c_slave.registers + dir);
+    return *registers;
+}
+int16_t usi_i2c_read_registers_s16(uint8_t dir) {
+    int16_t * registers;
+    registers = (int16_t*) (i2c_slave.registers + dir);
+    return *registers;
+}
+int32_t usi_i2c_read_registers_s32(uint8_t dir) {
+    int32_t * registers;
+    registers = (int32_t*) (i2c_slave.registers + dir);
+    return *registers;
 }
