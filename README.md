@@ -37,6 +37,18 @@ struct i2c_slave{
 
 #### Ejemplo de implementación
 
+En primer lugar se debe definir el puerto usado por el periférico USI con sus respectivos pines:
+
+Ejemplo para ATtiny45
+```c
+#define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/
+#define SCLP  PIN2		/*#PIN correspondiente al SCL en el puerto*/
+
+#define I2CPN PINB		/*Registro PINx donde está el periférico I²C*/
+#define I2CD  DDRB		/*Registro DDRx donde está el periférico I²C*/
+#define I2CP  PORTB		/*Registro PORTx donde está el periférico I²C*/
+```
+Y en el archivo principal se debe incluir el header con la función de inicialización
 ```c
 ...
 #include <usi_i2c_slave.h>
@@ -174,5 +186,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Para tener en cuenta:
 
 * Velocidades máximas de comunicación:
-* -100KHz a 8MHz
-* -200KHz a 16MHz
+  -100KHz a 8MHz
+  -200KHz a 16MHz
+* Esta librería hace uso de la interrupciones, por lo que las activa de manera global.
