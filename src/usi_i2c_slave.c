@@ -25,7 +25,7 @@
  */
 
 #include <stdint.h>
-#include "i2c_slave.h"
+#include "usi_i2c_slave.h"
 #include <avr/interrupt.h>
 
 #define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/
