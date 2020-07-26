@@ -1,5 +1,5 @@
 /*
- * File:   i2c.h
+ * File:   usi_i2c_slave.h
  * Autor:  David A. Aguirre Morales david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:35 PM
@@ -148,8 +148,8 @@
  * 
  */
 
-#ifndef _I2C_SLAVE_H_
-#define	_I2C_SLAVE_H_
+#ifndef _USI_I2C_SLAVE_H_
+#define	_USI_I2C_SLAVE_H_
 #include <stdint.h>
 
 /* i2c_slave ESTRUCTURA
@@ -215,4 +215,4 @@ int8_t usi_i2c_read_registers_s8 (uint8_t dir);
 int16_t usi_i2c_read_registers_s16(uint8_t dir);
 int32_t usi_i2c_read_registers_s32(uint8_t dir);
 
-#endif	/* _I2C_SLAVE_H */
+#endif	/* _USI_I2C_SLAVE_H */
