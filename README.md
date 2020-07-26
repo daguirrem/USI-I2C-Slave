@@ -16,7 +16,7 @@ MCU Compatible con USI de ATMEL
 
 ### usi_i2c_slave.h
 
-Se crea una estructura donde se almacena la dirección del esclavo configurable, y la cantidad de registros que se desean manejar, la cantidad depende de la cantidad de memoria RAM que tenga el MCU, este valor determina la cantidad de direcciones que tendrá disponible el periférico.
+Se crea una estructura donde se almacena la dirección del esclavo configurable, y la cantidad de registros que se desean manejar, la cantidad depende de la capacidad de memoria RAM que tenga el MCU, este valor determina la cantidad de direcciones que tendrá disponible el periférico.
 
 ```c
 struct i2c_slave{
