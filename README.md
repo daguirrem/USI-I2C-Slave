@@ -37,7 +37,7 @@ struct i2c_slave{
 
 #### Ejemplo de implementación
 
-En primer lugar se debe definir el puerto usado por el periférico USI con sus respectivos pines:
+En primer lugar se debe definir el puerto usado por el periférico USI con sus respectivos pines EN el header usi_i2c_slave.h:
 
 Ejemplo para ATtiny45
 ```c
