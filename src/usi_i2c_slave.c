@@ -28,13 +28,6 @@
 #include "usi_i2c_slave.h"
 #include <avr/interrupt.h>
 
-#define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/
-#define SCLP  PIN2		/*#PIN correspondiente al SCL en el puerto*/
-
-#define I2CPN PINB		/*Registro PINx donde está el periférico I²C*/
-#define I2CD  DDRB		/*Registro DDRx donde está el periférico I²C*/
-#define I2CP  PORTB		/*Registro PORTx donde está el periférico I²C*/
-
 static uint8_t status = 0;	/*Status (Estado Actual)		*/
 static uint8_t rdir   = 0;	/*Register direction (Dirección actual)	*/
 static uint8_t ack    = 0;	/*ACK (Indicador de modo ACK)		*/

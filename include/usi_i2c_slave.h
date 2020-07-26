@@ -152,6 +152,13 @@
 #define	_USI_I2C_SLAVE_H_
 #include <stdint.h>
 
+#define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/
+#define SCLP  PIN2		/*#PIN correspondiente al SCL en el puerto*/
+
+#define I2CPN PINB		/*Registro PINx donde está el periférico I²C*/
+#define I2CD  DDRB		/*Registro DDRx donde está el periférico I²C*/
+#define I2CP  PORTB		/*Registro PORTx donde está el periférico I²C*/
+
 /* i2c_slave ESTRUCTURA
  *  direction: Dirección del esclavo.
  *  registers: Registros del periferico para ser leídos o escritos, hasta 128.
