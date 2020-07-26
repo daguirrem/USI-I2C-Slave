@@ -67,8 +67,6 @@ LOCKBITS = {
     0xFF,
 };
 
-uint8_t x = 0;
-
 int main(void) {
 
     /*1*/
