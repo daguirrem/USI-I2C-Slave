@@ -50,7 +50,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#include "i2c_slave.h"
+#include "usi_i2c_slave.h"
 
 FUSES = {
     /* LOW {SUT_CKSEL=INTRCOSC_8MHZ_6CK_14CK_64MS, CKOUT=CLEAR, CKDIV8=CLEAR}*/
