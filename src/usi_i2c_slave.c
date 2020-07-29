@@ -60,13 +60,14 @@ ISR(USI_OVF_vect){
     /*¿Modo ACK? (¿Estoy en el bit correspondiente al ACK?)*/
     if(ack){
 
-	 /*¿NACK o ACK? (por parte del maestro)*/
+	/*¿NACK o ACK? (por parte del maestro)*/
 	if(status == 5){
 	    if ( bit_is_clear(I2CPN,SDAP)) {
 		/*En caso de ACK, prepare el siguiente envío del registro*/
 		status = 4;
 		I2CD |=  ( 1<<SDAP );
 		rdir++;
+		loop_until_bit_is_clear(I2CPN,SCLP);
 	    }
 	    else {
 		/*En caso de NACK, termine la trasmisión*/
@@ -75,6 +76,7 @@ ISR(USI_OVF_vect){
 		I2CP &= ~(( 1<<SDAP ));
 		I2CD &= ~(( 1<<SDAP ));
 		USICR &= ~(1<<USIOIE);
+		loop_until_bit_is_set(I2CPN,SCLP);
 	    }
 	}
 	/*Modo recepción de datos (POST ACK)*/
