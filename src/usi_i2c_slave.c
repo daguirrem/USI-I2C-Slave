@@ -71,12 +71,12 @@ ISR(USI_OVF_vect){
 	    }
 	    else {
 		/*En caso de NACK, termine la trasmisión*/
+		loop_until_bit_is_clear(I2CPN,SCLP);
 		status = 0;
 		rdir = 0;
 		I2CP &= ~(( 1<<SDAP ));
 		I2CD &= ~(( 1<<SDAP ));
 		USICR &= ~(1<<USIOIE);
-		loop_until_bit_is_set(I2CPN,SCLP);
 	    }
 	}
 	/*Modo recepción de datos (POST ACK)*/
