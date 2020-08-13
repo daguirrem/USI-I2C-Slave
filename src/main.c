@@ -3,12 +3,8 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:24 PM
- * Última modificación: 25 de julio de 2020
- *                      Modificación para pruebas de lectura o escritura de varios
- *			registros con nuevas funciones, documentación, arreglo pequeños
- *			errores.
- *			Fuses de prueba incluidos.
- *			Actualización a completo.
+ * Última modificación: 20 de agosto de 2020
+ *                      Fix librerías, y FUSES para Atmel Studio
  *
  * Objetivo:
  *  PRUEBAS de implementación del protocolo I²C en modo esclavo para comunicarlo
@@ -48,6 +44,7 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/fuse.h>
 #include <util/delay.h>
 
 #include "usi_i2c_slave.h"
@@ -60,11 +57,6 @@ FUSES = {
     .high = 0xDD,
     /*EXTENDED {SELFPRGEN=CLEAR}*/
     .extended = 0xFF,
-};
-
-LOCKBITS = {
-    /* LOCKBIT {LB=NO_LOCK}*/
-    0xFF,
 };
 
 int main(void) {
