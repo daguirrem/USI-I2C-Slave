@@ -3,10 +3,8 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
- * Última modificación: 25 de julio de 2020
- *			implementación de funciones para leer distintos tipos de datos
- *			en los registros.
- *			Actualización a completo
+ * Última modificación: 12 de agosto de 2020
+ *			Bugfix Start
  *
  * Descripción :
  *  Libreria para la implementación del periferico USI en modo I²C.
@@ -25,8 +23,11 @@
  */
 
 #include <stdint.h>
-#include "usi_i2c_slave.h"
+#include <avr/io.h>
+#include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
+
+#include "usi_i2c_slave.h"
 
 static uint8_t status = 0;	/*Status (Estado Actual)		*/
 static uint8_t rdir   = 0;	/*Register direction (Dirección actual)	*/
@@ -36,6 +37,8 @@ static uint8_t ack    = 0;	/*ACK (Indicador de modo ACK)		*/
 
 /*Interrupción por detección de START*/
 ISR(USI_START_vect){
+    /*Espere a que el modo START termine*/
+    loop_until_bit_is_clear(I2CPN,SCLP);
     /*Mantener SCL*/
     I2CD |= ( 1<<SCLP );
     /*¿Repeated START?*/
