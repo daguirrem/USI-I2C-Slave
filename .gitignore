@@ -4,3 +4,10 @@ dist/*
 nbproject/*
 Makefile
 *.7z
+.vs/*
+Debug/*
+Release/*
+*.atsln
+*.xml
+*.cproj
+
