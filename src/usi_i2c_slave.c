@@ -4,17 +4,18 @@
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
  * Última modificación: 12 de agosto de 2020
- *			Bugfix Start
+ *			            Actualización funciones de escritura y lectura registros internos
+ *			            "i2c_yyyy_registersXX" ->  "i2c_slave_yyyy_internalData"
  *
  * Descripción :
  *  Libreria para la implementación del periferico USI en modo I²C.
  *  Declaración de funciones e interrupciones.
  *
  * Estado:
- *  Funcionalidad aprobada.
+ *  Aprobado.
  *
- * Futuras actualizaciones:
- *  Ninguna
+ * Pendiente:
+ *  Nada.
  */
 
 /* REFERENCIAS:
@@ -22,19 +23,28 @@
  *  ATtiny45 DATASHEET, Atmel (https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
  */
 
-#include <stdint.h>
+/* GITHUB
+ * https://github.com/daguirrem/usi_i2c_slave
+ */
+
 #include <avr/io.h>
-#include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 
 #include "usi_i2c_slave.h"
 
-static uint8_t status = 0;	/*Status (Estado Actual)		*/
-static uint8_t rdir   = 0;	/*Register direction (Dirección actual)	*/
-static uint8_t ack    = 0;	/*ACK (Indicador de modo ACK)		*/
+struct i2c_slave_s{
+    uint8_t direction;
+    uint8_t status;     /*Status (Estado Actual)		*/
+    uint8_t rdir;       /*Register direction (Dirección actual)	*/
+    uint8_t ack;        /*ACK (Indicador de modo ACK)		*/
+    uint8_t registers[I2C_SLAVE_SZ_REG];
+};
+
+static struct i2c_slave_s i2c_slave = {
+    0,0,0,0,{}
+};
 
 /*Interrupciones*/
-
 /*Interrupción por detección de START*/
 ISR(USI_START_vect){
     /*Espere a que el modo START termine*/
@@ -42,9 +52,9 @@ ISR(USI_START_vect){
     /*Mantener SCL*/
     I2CD |= ( 1<<SCLP );
     /*¿Repeated START?*/
-    if (status == 2) {
+    if (i2c_slave.status == 2) {
 	/*Si, Vuelva al inicio para que lea de nuevo la dirección*/
-        status = 0;
+        i2c_slave.status = 0;
     }
     else {
 	/*No, prepare la interrupción por desborde*/
@@ -61,52 +71,52 @@ ISR(USI_START_vect){
 ISR(USI_OVF_vect){
 
     /*¿Modo ACK? (¿Estoy en el bit correspondiente al ACK?)*/
-    if(ack){
+    if(i2c_slave.ack){
 
 	/*¿NACK o ACK? (por parte del maestro)*/
-	if(status == 5){
+	if(i2c_slave.status == 5){
 	    if ( bit_is_clear(I2CPN,SDAP)) {
 		/*En caso de ACK, prepare el siguiente envío del registro*/
-		status = 4;
+		i2c_slave.status = 4;
 		I2CD |=  ( 1<<SDAP );
-		rdir++;
+		i2c_slave.rdir++;
 		loop_until_bit_is_clear(I2CPN,SCLP);
 	    }
 	    else {
 		/*En caso de NACK, termine la trasmisión*/
 		loop_until_bit_is_clear(I2CPN,SCLP);
-		status = 0;
-		rdir = 0;
+		i2c_slave.status = 0;
+		i2c_slave.rdir = 0;
 		I2CP &= ~(( 1<<SDAP ));
 		I2CD &= ~(( 1<<SDAP ));
 		USICR &= ~(1<<USIOIE);
 	    }
 	}
 	/*Modo recepción de datos (POST ACK)*/
-	if(status == 3) {
+	if(i2c_slave.status == 3) {
 	    /*Mantener SCL en bajo*/
             I2CD |=  ( 1<<SCLP );
 	    /*¿Stop?*/
 	    if(bit_is_set(USISR,USIPF)){
 		/*Si, Detenga la trasmisión*/
-		rdir = 0;
-		status = 0;
+		i2c_slave.rdir = 0;
+		i2c_slave.status = 0;
 		USICR &= ~(1<<USIOIE);
 	    }
 	    else {
 		/*No, Prepare el siguiente registro*/
-		status=2;
-		rdir++;
+		i2c_slave.status=2;
+		i2c_slave.rdir++;
 	    }
 	    /*Liberar SDA, para el resto de modos*/
             I2CD &= ~(( 1<<SDAP ));
         }
 	/*Modo envío de datos (PRE)*/
-	else if ( status == 4) {
+	else if ( i2c_slave.status == 4) {
 	     /*Mantener SCL en bajo*/
 	    I2CD |=  ( 1<<SCLP );
 	    /*Cargue el registro de salido con los datos*/
-            USIDR = i2c_slave.registers[rdir];
+            USIDR = i2c_slave.registers[i2c_slave.rdir];
 	    /*SDA como salida, para envío*/
             I2CP |=  ( 1<<SDAP );
         }
@@ -118,7 +128,7 @@ ISR(USI_OVF_vect){
         }
 
 	/*Alterne el modo ACK*/
-	ack = 0;
+	i2c_slave.ack = 0;
         /*Reinicio de todas la banderas y del contador*/
 	USISR =  ~( ( 1<<USICNT3 )|( 1<<USICNT2 )|( 1<<USICNT1 )|( 1<<USICNT0 ) );
     }
@@ -129,7 +139,7 @@ ISR(USI_OVF_vect){
 	USISR = ~USISR & ~( ( 1<<USICNT3 )|( 1<<USICNT2 )|( 1<<USICNT1 )|( 1<<USICNT0 ) );
 
 	/*Lectura de direccion (Esclavo) y modo (Escribir o Leer)*/
-	if(status == 0){
+	if(i2c_slave.status == 0){
             uint8_t wrrd = USIDR&0x1;	/*Escribir o leer*/
             uint8_t dire = USIDR>>1;	/*Dirección leída del maestro*/
 
@@ -138,52 +148,52 @@ ISR(USI_OVF_vect){
 		/*Compruebe si el maestro quiere escribir o leer*/
 		if(wrrd == 1) {
 		    /*Si quiere leer, active el modo envío de datos*/
-		    status = 4;
+		    i2c_slave.status = 4;
 		}
 		else {
 		    /*Si no, lea el registro objetivo*/
-		    status++;
+		    i2c_slave.status++;
 		}
 		/*Prepare el modo ACK*/
 		I2CD |=  ( 1<<SDAP );
-		ack = 1;
+		i2c_slave.ack = 1;
 	    }
         }
 	/*Lectura de dirección de registro objetivo*/
-        else if(status == 1) {
+        else if(i2c_slave.status == 1) {
             /*Guarde la dirección del registro objetivo*/
-	    rdir = USIDR;
+	    i2c_slave.rdir = USIDR;
 	    /*Prepare el modo ACK*/
             I2CD |=  ( 1<<SDAP );
-            ack = 1;
+            i2c_slave.ack = 1;
 	    /*Prepare modo recepción de datos (PRE ACK)*/
-            status++;
+            i2c_slave.status++;
         }
 	/*Modo recepción de datos (PRE ACK)*/
-        else if (status == 2) {
+        else if (i2c_slave.status == 2) {
             /*Guarde los datos enviados por el maestro en la dirección dada*/
-	    i2c_slave.registers[rdir] = USIDR;
+	    i2c_slave.registers[i2c_slave.rdir] = USIDR;
 	    /*Prepare el modo ACK*/
             I2CD |= ( 1<<SDAP );
-	    ack = 1;
+	    i2c_slave.ack = 1;
             /*Prepare modo recepción de datos (POST ACK)*/
-	    status++;
+	    i2c_slave.status++;
         }
 	/*Modo de envió de datos (PRE ACK)*/
-        else if(status == 4) {
+        else if(i2c_slave.status == 4) {
             /*Prepare la interrupción al siguiente flanco de subida en SCL*/
 	    /*(Flanco correspondiente al ACK)*/
 	    USISR |= ( 1<<USICNT0 );	    /*14+1 = 15*/
 	    /*Modo ACK*/
 	    I2CD  &= ~( 1<<SDAP);
-	    ack = 1;
+	    i2c_slave.ack = 1;
 	    /*Prepare lectura de ACK o NACK*/
-	    status++;
+	    i2c_slave.status++;
         }
 
 	/*Si el modo ACK fue configurado inicialice el contador en 14*/
 	/*para provocar una interrupción en el siguiente clock en SCL*/
-        if(ack) {
+        if(i2c_slave.ack) {
             USISR |= ( 1<<USICNT3 )|( 1<<USICNT2 )|( 1<<USICNT1 );
         }
 	/*Limpieza buffer entrada*/
@@ -195,7 +205,7 @@ ISR(USI_OVF_vect){
     I2CD &= ~( 1<<SCLP );
 }
 
-void usi_i2c_slave(uint8_t dir){
+void i2c_slave_init(uint8_t dir){
     I2CP &= ~(( 1<<SDAP ) | ( 1<<SCLP ));   /*Configuración pines SDA y SCL*/
     I2CD &= ~(( 1<<SDAP ) | ( 1<<SCLP ));
 
@@ -212,71 +222,90 @@ void usi_i2c_slave(uint8_t dir){
     sei();                                  /*Interrupciones globales*/
 }
 
-void usi_i2c_save_registers_u8(uint8_t data, uint8_t dir) {
-    uint8_t * registers;
-    registers = (uint8_t*) (i2c_slave.registers + dir);
-    *registers = data;
-}
-void usi_i2c_save_registers_u16(uint16_t data, uint8_t dir) {
-    uint16_t * registers;
-    registers = (uint16_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
-}
-void usi_i2c_save_registers_u32(uint32_t data, uint8_t dir) {
-    uint32_t * registers;
-    registers = (uint32_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<< 8)|((data&0x00FF0000)>> 8);
+void i2c_slave_write_internalData
+(size_t rDir, const i2c_data_t data,databits_t datatype){
+
+    switch (datatype){
+        default:
+        #if defined(I2C_REG_8)
+        case bit8:
+        *((uint8_t*)(i2c_slave.registers+rDir)) = data;
+        break;
+        #endif /*defined(I2C_REG_8)*/
+
+        #if defined(I2C_REG_16)
+        case bit16:
+        *((uint16_t*)(i2c_slave.registers+rDir)) = (data<<8) | (data>>8);
+        break;
+        #endif /*defined(I2C_REG_16)*/
+
+        #if defined(I2C_REG_32)
+        case bit32:
+        *((uint32_t*)(i2c_slave.registers+rDir)) =
+        ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
+        ((data&0x0000FF00)<< 8)|((data&0x00FF0000)>> 8);
+        break;
+        #endif /*defined(REG_32)*/
+
+        #if defined(I2C_REG_64)
+        case bit64:
+        *((uint64_t*)(i2c_slave.registers+rDir)) =
+        ((data&0x0000000000000000)<<56)|((data&0xFF00000000000000)>>56)|
+        ((data&0x000000000000FF00)<<48)|((data&0x00FF000000000000)>>48)|
+        ((data&0x0000000000FF0000)<<24)|((data&0x0000FF0000000000)>>24)|
+        ((data&0x00000000FF000000)<< 8)|((data&0x000000FF00000000)>> 8);
+        break;
+        #endif /*defined(REG_64)*/
+    }
 }
 
-void usi_i2c_save_registers_s8(int8_t data, uint8_t dir) {
-    int8_t * registers;
-    registers = (int8_t*) (i2c_slave.registers + dir);
-    *registers = data;
-}
-void usi_i2c_save_registers_s16(int16_t data, uint8_t dir) {
-    int16_t * registers;
-    registers = (int16_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0xFF)<<8)|((data&0xFF00)>>8);
-}
-void usi_i2c_save_registers_s32(int32_t data, uint8_t dir) {
-    int32_t * registers;
-    registers = (int32_t*) (i2c_slave.registers + dir);
-    //Intercambiar posición de bytes
-    *registers = ((data&0x000000FF)<<24)|((data&0xFF000000)>>24)|
-		 ((data&0x0000FF00)<< 8)|((data&0x00FF0000)>> 8);
+i2c_data_t i2c_slave_read_internalData (size_t rDir, databits_t datatype){
+    i2c_data_t data;
+    switch (datatype){
+        default:
+        #if defined(I2C_REG_8)
+        case bit8:
+        data = *((uint8_t*)(i2c_slave.registers+rDir));
+        break;
+        #endif /*defined(I2C_REG_8)*/
+
+        #if defined(I2C_REG_16)
+        case bit16:
+        data = *((uint16_t*)(i2c_slave.registers+rDir));
+        break;
+        #endif /*defined(I2C_REG_16)*/
+
+        #if defined(I2C_REG_32)
+        case bit32:
+        data = *((uint32_t*)(i2c_slave.registers+rDir));
+        break;
+        #endif /*defined(I2C_REG_32)*/
+
+        #if defined(I2C_REG_64)
+        case bit64:
+        data = *((uint64_t*)(i2c_slave.registers+rDir));
+        break;
+        #endif /*defined(I2C_REG_64)*/
+    }
+    return data;
 }
 
-uint8_t usi_i2c_read_registers_u8 (uint8_t dir) {
-    uint8_t * registers;
-    registers = (uint8_t*) (i2c_slave.registers + dir);
-    return *registers ;
+#if defined(I2C_REG_FL)
+void i2c_slave_write_internalData_F (size_t rDir, const float data){
+    /*__data_representation*/
+    uint32f_t __data_r;
+    __data_r._float = data;
+    *((uint32_t*)(i2c_slave.registers+rDir)) =
+    ((__data_r._uint32&0x000000FF)<<24)|((__data_r._uint32&0xFF000000)>>24)|
+    ((__data_r._uint32&0x0000FF00)<< 8)|((__data_r._uint32&0x00FF0000)>> 8);
 }
-uint16_t usi_i2c_read_registers_u16(uint8_t dir) {
-    uint16_t * registers;
-    registers = (uint16_t*) (i2c_slave.registers + dir);
-    return *registers;
+float i2c_slave_read_internalData_F (size_t rDir){
+    return *((double*)(i2c_slave.registers+rDir));
 }
-uint32_t usi_i2c_read_registers_u32(uint8_t dir) {
-    uint32_t * registers;
-    registers = (uint32_t*) (i2c_slave.registers + dir);
-    return *registers;
+
+#if defined(DEBUG)
+void i2c_slave_write_internalData_D_DEBUG (size_t rDir, const double data){
+    *((double*)(i2c_slave.registers+rDir)) = data;
 }
-int8_t usi_i2c_read_registers_s8 (uint8_t dir) {
-    int8_t * registers;
-    registers = (int8_t*) (i2c_slave.registers + dir);
-    return *registers;
-}
-int16_t usi_i2c_read_registers_s16(uint8_t dir) {
-    int16_t * registers;
-    registers = (int16_t*) (i2c_slave.registers + dir);
-    return *registers;
-}
-int32_t usi_i2c_read_registers_s32(uint8_t dir) {
-    int32_t * registers;
-    registers = (int32_t*) (i2c_slave.registers + dir);
-    return *registers;
-}
+#endif /*defined(DEBUG)*/
+#endif /*defined(I2C_REG_32)*/
