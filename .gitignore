@@ -10,4 +10,4 @@ Release/*
 *.atsln
 *.xml
 *.cproj
-
+usi_i2c_slave.X
