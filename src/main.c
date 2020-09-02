@@ -4,16 +4,17 @@
  *
  * Fecha de creación:   23 de junio de 2020, 08:24 PM
  * Última modificación: 20 de agosto de 2020
- *                      Fix librerías, y FUSES para Atmel Studio
+ *                      Actualización para trabajar con nuevo método de acceder a
+ *                      los registros internos del periférico.
  *
  * Objetivo:
  *  PRUEBAS de implementación del protocolo I²C en modo esclavo para comunicarlo
  *  con otros MCU's
  *
  * ESTADO:
- *  Funcionalidad probada.
+ *  Aprobado.
  *
- * FUTURAS ACTUALIZACIONES:
+ * PENDIENTE:
  *  Ninguna.
  *
  * MCU:
@@ -40,11 +41,14 @@
  *             16Mhz - 200KHz
  */
 
+/* GITHUB
+ * https://github.com/daguirrem/usi_i2c_slave
+ */
+
 #define F_CPU 8000000UL
 
 #include <stdint.h>
 #include <avr/io.h>
-#include <avr/fuse.h>
 #include <util/delay.h>
 
 #include "usi_i2c_slave.h"
@@ -62,15 +66,15 @@ FUSES = {
 int main(void) {
 
     /*1*/
-    usi_i2c_slave( 0x1F );
+    i2c_slave_init( 0x1F );
 
     /*2*/
     /*Usa un byte de los registros disponibles*/
-    usi_i2c_save_registers_s8(-12,0x1);
+    i2c_slave_write_internalData(0x1,-12,bit8);
     /*Usa dos bytes de los registros disponibles (0x2-0x3)*/
-    usi_i2c_save_registers_u16(0xCAB3,0x2);
+    i2c_slave_write_internalData(0x2,0xCAB3,bit16);
     /*Usa cuatro bytes de los registros disponibles (0x4-0x7)*/
-    usi_i2c_save_registers_u32(0xFFC90132,0x4);
+    i2c_slave_write_internalData(0x4,0xFFC90132,bit32);
 
     /*Pin 3 como salida*/
     DDRB |= ( 1<<PINB3 );
@@ -78,7 +82,7 @@ int main(void) {
     int16_t test = 0;
     while (1) {
 	/*3*/
-	test = usi_i2c_read_registers_s16(0x8);
+	test = i2c_slave_read_internalData(0x8,bit8);
         if(test == -27128) {
 	    /*Conmutación pin 3*/
             PORTB ^= (1<<PINB3);
