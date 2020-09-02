@@ -16,30 +16,8 @@ MCU Compatible con USI de ATMEL
 
 ### usi_i2c_slave.h
 
-Se crea una estructura donde se almacena la dirección del esclavo configurable, y la cantidad de registros que se desean manejar, la cantidad depende de la capacidad de memoria RAM que tenga el MCU, este valor determina la cantidad de direcciones que tendrá disponible el periférico.
+Configurar el modo I²C modificando los pines y puertos usados por el periférico USI en el respectivo MCU (ver datasheet)
 
-```c
-struct i2c_slave{
-    uint8_t direction	  ;
-    uint8_t registers[10]
-} i2c_slave;
-
-```
-o
-
-```c
-struct i2c_slave{
-    uint8_t direction	  ;
-    uint8_t registers[256]
-} i2c_slave;
-
-```
-
-#### Ejemplo de implementación
-
-En primer lugar se debe definir el puerto usado por el periférico USI con sus respectivos pines EN el header usi_i2c_slave.h:
-
-Ejemplo para ATtiny45
 ```c
 #define SDAP  PIN0		/*#PIN correspondiente al SDA en el puerto*/
 #define SCLP  PIN2		/*#PIN correspondiente al SCL en el puerto*/
@@ -48,14 +26,24 @@ Ejemplo para ATtiny45
 #define I2CD  DDRB		/*Registro DDRx donde está el periférico I²C*/
 #define I2CP  PORTB		/*Registro PORTx donde está el periférico I²C*/
 ```
-Y en el archivo principal se debe incluir el header con la función de inicialización
+y configurar el tamaño de registros internos (cantidad de direcciones) que va a manejar el modo esclavo
+
+```c
+#define I2C_SLAVE_SZ_REG number_of_registers (Eg. 100)
+```
+
+#### Ejemplo de implementación
+
+Ejemplo para ATtiny45
+
+En el archivo principal se debe incluir el header con la función de inicialización
 ```c
 ...
 #include <usi_i2c_slave.h>
 ...
 int main(void){
     ...
-    usi_i2c_slave(direction_of_slave);
+    i2c_slave_init(direction_of_slave);
     ...
     while(1){
     ...
@@ -64,43 +52,44 @@ int main(void){
 }
 ```
 #### Si desea modificar registros del periferico:
+
 ```c
 ...
 #include <usi_i2c_slave.h>
 ...
 int main(void){
- ...
-    usi_i2c_slave(direction_of_slave);
+...
+    i2c_slave_init(direction_of_slave);
     ...
     //Usa un byte de los registros disponibles (IMPORTANTE **)
-    usi_i2c_save_registers_s8(signed_char_var,direction_to_save_data);
-
+    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_char_var,bit8);
     //Usa dos bytes de los registros disponibles (IMPORTANTE **)
-    usi_i2c_save_registers_u16(unsigned_int_var,direction_to_save_data);
-
+    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_int_var,bit16);
     //Usa cuatro bytes de los registros disponibles (IMPORTANTE **)
-    usi_i2c_save_registers_u32(unsigned_long_var,direction_to_save_data);
-    
+    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_long_var,bit32);
+    //Para guardar un flotante (Usa cuatro registros disponibles)
+    i2c_slave_write_internalData_F(dir_of_slave, float_var);
     etc.
     ...
     while(1) {
         ...
     }
-
-}
+ }
 ```
 **Los registros internos del esclavo están organizados de byte en byte por dirección:
 ```c
-   i2c_slave_registers: [0x00] (1 byte)
-                        [0x01] (1 byte)
-                        [... ] ...
-                        [0x7F] (1 byte) (0x7F == 127 CONFIGURABLE)
-```
+    i2c_slave.registers: [0x00] (1 byte)
+                         [0x01] (1 byte)
+                         [... ] ...
+                         [0x7F] (1 byte) (0x7F == 127 CONFIGURABLE)
+                         
+                         donde: I2C_SLAVE_SZ_REG 128
+``` 
    Si se esribe una variable tipo DWORD (32bits) esta ocupará 4 bytes disponibles:
 ```c
-    -> usi_i2c_save_registers_u32(0xFFC90132,0x00);
+    -> i2c_slave_write_internalData(0x00,0xFFC90132,bit32);
     
-    i2c_slave_registers: [0x00] 0xFF (1 byte)
+    i2c_slave.registers: [0x00] 0xFF (1 byte)
                          [0x01] 0xC9 (1 byte)
                          [0x02] 0x01 (1 byte)
                          [0x03] 0x32 (1 byte)
@@ -114,16 +103,16 @@ int main(void){
 ...
 int main(void) {
     ...
-    usi_i2c_slave(direction_of_slave);
+    i2c_slave_init(direction_of_slave);
     ...
     long int signed_dword_var = 0;
     unsigned char unsigned_byte_var = 0;
     unsigned int unsigned_word_var = 0;
 
     while(1){
-        signed_dword_var = usi_i2c_read_registers_s32(direction_of_data_in_registers);
-        unsigned_byte_var = usi_i2c_read_registers_u8(direction_of_data_in_registers);
-        unsigned_word_var = usi_i2c_read_registers_u16(direction_of_data_in_registers);
+        signed_dword_var  = i2c_slave_read_internalData(direction_of_data_in_registers,bit32);
+        unsigned_byte_var = i2c_slave_read_internalData(direction_of_data_in_registers,bit8);
+        unsigned_word_var = i2c_slave_read_internalData(direction_of_data_in_registers,bit16);
     }
 
 }
@@ -185,7 +174,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Para tener en cuenta:
 
-* Velocidades máximas de comunicación:
+* Velocidades máximas de comunicación probadas:
   -100KHz a 8MHz
   -200KHz a 16MHz
 * Esta librería hace uso de la interrupciones, por lo que las activa de manera global.
