@@ -110,9 +110,9 @@ int main(void) {
     unsigned int unsigned_word_var = 0;
 
     while(1){
-        signed_dword_var  = i2c_slave_read_internalData(direction_of_data_in_registers,bit32);
-        unsigned_byte_var = i2c_slave_read_internalData(direction_of_data_in_registers,bit8);
-        unsigned_word_var = i2c_slave_read_internalData(direction_of_data_in_registers,bit16);
+        signed_dword_var  = (long int) i2c_slave_read_internalData(direction_of_data_in_registers,bit32);
+        unsigned_byte_var = (unsigned char) i2c_slave_read_internalData(direction_of_data_in_registers,bit8);
+        unsigned_word_var = (unsigned int) i2c_slave_read_internalData(direction_of_data_in_registers,bit16);
     }
 
 }
