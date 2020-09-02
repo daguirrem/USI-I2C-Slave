@@ -62,13 +62,13 @@ int main(void){
     i2c_slave_init(direction_of_slave);
     ...
     //Usa un byte de los registros disponibles (IMPORTANTE **)
-    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_char_var,bit8);
+    i2c_slave_write_internalData(target_direction_in_registers, signed_or_unsigned_char_var,bit8);
     //Usa dos bytes de los registros disponibles (IMPORTANTE **)
-    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_int_var,bit16);
+    i2c_slave_write_internalData(target_direction_in_registers, signed_or_unsigned_int_var,bit16);
     //Usa cuatro bytes de los registros disponibles (IMPORTANTE **)
-    i2c_slave_write_internalData(dir_of_slave, signed_or_unsigned_long_var,bit32);
+    i2c_slave_write_internalData(target_direction_in_registers, signed_or_unsigned_long_var,bit32);
     //Para guardar un flotante (Usa cuatro registros disponibles)
-    i2c_slave_write_internalData_F(dir_of_slave, float_var);
+    i2c_slave_write_internalData_F(target_direction_in_registers, float_var);
     etc.
     ...
     while(1) {
