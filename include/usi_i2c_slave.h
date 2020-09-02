@@ -3,7 +3,7 @@
  * Autor:  David A. Aguirre Morales david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:35 PM
- * Última modificación: 26 de julio de 2020
+ * Última modificación: 02 de septiembre de 2020
  *                      Actualización funciones escritura y lectura de
  *                      registros internos. (nuevos enums y defines)
  *                      Actualización i2c_init

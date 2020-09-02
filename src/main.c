@@ -3,7 +3,7 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:24 PM
- * Última modificación: 20 de agosto de 2020
+ * Última modificación: 02 de septiembre de 2020
  *                      Actualización para trabajar con nuevo método de acceder a
  *                      los registros internos del periférico.
  *

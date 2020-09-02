@@ -3,7 +3,7 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
- * Última modificación: 12 de agosto de 2020
+ * Última modificación: 02 de septiembre de 2020
  *			            Actualización funciones de escritura y lectura registros internos
  *			            "i2c_yyyy_registersXX" ->  "i2c_slave_yyyy_internalData"
  *
