@@ -3,9 +3,8 @@
  * Autor:  David A. Aguirre Morales - david.aguirre1598@outlook.com
  *
  * Fecha de creación:   23 de junio de 2020, 08:33 PM
- * Última modificación: 02 de septiembre de 2020
- *			            Actualización funciones de escritura y lectura registros internos
- *			            "i2c_yyyy_registersXX" ->  "i2c_slave_yyyy_internalData"
+ * Última modificación: 03 de septiembre de 2020
+ *			            i2c_write_internalData: 64 bits error corregido.
  *
  * Descripción :
  *  Libreria para la implementación del periferico USI en modo I²C.
@@ -250,7 +249,7 @@ void i2c_slave_write_internalData
         #if defined(I2C_REG_64)
         case bit64:
         *((uint64_t*)(i2c_slave.registers+rDir)) =
-        ((data&0x0000000000000000)<<56)|((data&0xFF00000000000000)>>56)|
+        ((data&0x00000000000000FF)<<56)|((data&0xFF00000000000000)>>56)|
         ((data&0x000000000000FF00)<<48)|((data&0x00FF000000000000)>>48)|
         ((data&0x0000000000FF0000)<<24)|((data&0x0000FF0000000000)>>24)|
         ((data&0x00000000FF000000)<< 8)|((data&0x000000FF00000000)>> 8);
