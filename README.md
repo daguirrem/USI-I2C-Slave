@@ -82,13 +82,13 @@ int main(void){
                          [0x01] (1 byte)
                          [... ] ...
                          [0x7F] (1 byte) (0x7F == 127 CONFIGURABLE)
-                         
+
                          donde: I2C_SLAVE_SZ_REG 128
-``` 
+```
    Si se esribe una variable tipo DWORD (32bits) esta ocupará 4 bytes disponibles:
 ```c
     -> i2c_slave_write_internalData(0x00,0xFFC90132,bit32);
-    
+
     i2c_slave.registers: [0x00] 0xFF (1 byte)
                          [0x01] 0xC9 (1 byte)
                          [0x02] 0x01 (1 byte)
@@ -118,8 +118,8 @@ int main(void) {
 }
 ```
 #### ¿Cómo se envían los bytes leídos en mi I²C?
- 
- Ejemplo: 
+
+ Ejemplo:
  El maestro desea leer un dword de los registros: 0x04, con el valor: 0xFFC90132
  del esclavo con dirección: 0x1F
 
@@ -131,7 +131,7 @@ int main(void) {
  El esclavo envía al maestro primero los bytes más significativos
 
  #### ¿Cómo se guardan los bytes escrios en mi I²C? (*Por un maestro)
- 
+
  Ejemplo:
  El maestro desea escribir un word en los registros: 0x01, con el valor: 0x51AC
  del esclavo con dirección: 0x1F
@@ -151,7 +151,7 @@ int main(void) {
 
  DIRE = DIRECCIÓN ESCLAVO
  DIRR = DIRECCIÓN REGISTRO
- 
+
  W = WRITE
  R = READ
 
@@ -159,11 +159,11 @@ int main(void) {
  N = NACK
  * = CONTROLADO POR EL MAESTRO (MASTER CONTROLLED)
  ```
- 
+
  Para mas información vea el archivo header: usi_i2c_slave.h
- 
+
  Para más información técnica vea el archivo: usi_i2c_slave.c
- 
+
 ## Autor
 
 * **David Alejandro Aguirre Morales** - [daguirrem](https://github.com/daguirrem)
@@ -171,6 +171,11 @@ int main(void) {
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Buglist
+
+*Un escaneo al bus I2C hará que el dispositivo responda a la dirección 0x20, sin embargo esto no afecta
+el funcionamiento, gracias a [favoritelotus](https://github.com/favoritelotus) por el reporte; más información en [0x20_Bug](https://github.com/daguirrem/usi_i2c_slave/issues/1)
 
 ## Para tener en cuenta:
 
