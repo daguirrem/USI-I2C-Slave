@@ -1,4 +1,4 @@
-# USI-I2C-Slave
+# USI_I2C_Slave
 
 Implementación del periferico USI de los ATtiny compatibles en modo I²C - Esclavo, Esta librería provee el funcionamiento básico del periférico, y un ejemplo de implementación.
 
@@ -172,10 +172,10 @@ int main(void) {
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## Buglist
+## Bug List
 
-*Un escaneo al bus I2C hará que el dispositivo responda a la dirección 0x20, sin embargo esto no afecta
-el funcionamiento, gracias a [favoritelotus](https://github.com/favoritelotus) por el reporte; más información en [0x20_Bug](https://github.com/daguirrem/usi_i2c_slave/issues/1)
+* Un escaneo al bus I2C hará que el dispositivo responda a la dirección 0x20, sin embargo esto no afecta
+el funcionamiento, gracias a [favoritelotus](https://github.com/favoritelotus) por el reporte; más información en [0x20 Bug](https://github.com/daguirrem/usi_i2c_slave/issues/1)
 
 ## Para tener en cuenta:
 
