@@ -82,7 +82,7 @@ int main(void) {
     int16_t test = 0;
     while (1) {
 	/*3*/
-	test = i2c_slave_read_internalData(0x8,bit8);
+	test = (int16_t) i2c_slave_read_internalData(0x8,bit16);
         if(test == -27128) {
 	    /*Conmutación pin 3*/
             PORTB ^= (1<<PINB3);
