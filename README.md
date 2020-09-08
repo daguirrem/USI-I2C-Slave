@@ -174,8 +174,10 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Buglist
 
-*Un escaneo al bus I2C hará que el dispositivo responda a la dirección 0x20, sin embargo esto no afecta
-el funcionamiento, gracias a [favoritelotus](https://github.com/favoritelotus) por el reporte; más información en [0x20_Bug](https://github.com/daguirrem/usi_i2c_slave/issues/1)
+* **0x20_Bug:** El dispositivo responde con un ack si se hace una petición con la dirección actual del esclavo
+y la siguiente de manera consecutiva (por ejemplo escaneando el BUS I²C), el bug aún no está arreglado,
+Thanks to [favoritelotus](https://github.com/favoritelotus) for the report, más información en
+[0x20_Bug](https://github.com/daguirrem/usi_i2c_slave/issues/1)
 
 ## Para tener en cuenta:
 
